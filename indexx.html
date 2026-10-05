@@ -1,0 +1,93 @@
+const DATA={
+  names:"Eder & Mayra",
+  dateISO:"2026-11-07T08:30:00",
+  dateText:"07 · 11 · 2026",
+  place:"san Agustin de cajas · Huancayo · Perú",
+  quote:"“Nos uniremos en matrimonio y será una gran alegía com partir este momento tan especial con ustedes.”",
+
+  groomParents:"Esequiel Canteño Justiniano<br>Luisa Adriana Yupanqui viuda de Canteño",
+  brideParents:"Serapio Lucio Nuñez Solano<br>Ada Frida Cuyutupac Chipana",
+  godparents:"Edwin Francisco Onofre Aquino<br>&amp; Hada Solano Cáceres",
+
+  church:{
+    name:"Parroquia San Agusitn de Hipona",
+    date:"07 de noviembre · 08:30 p.m.",
+    maps:"https://maps.app.goo.gl/KiAXq5hPDMDRZy528"
+  },
+  reception:{
+    name:"Local “El Paraíso”",
+    date:"Después de la ceremonia",
+    maps:"https://maps.app.goo.gl/bsUc3NRpXJLssnd69"
+  },
+
+  /* Coloca aquí tus fotos. Deben estar dentro de assets/ */
+  photos:[
+    "assets/foto1.svg","assets/foto2.svg","assets/foto3.svg",
+    "assets/foto4.svg","assets/foto5.svg","assets/foto6.svg",
+    "assets/foto7.svg","assets/foto8.svg","assets/foto9.svg"
+  ],
+
+  /* Si quieres confirmación por WhatsApp, cambia el número.
+     Formato Perú: 519XXXXXXXX */
+  whatsapp:"51999999999"
+};
+/* ===================================================== */
+
+const set=(id,value)=>{const e=document.getElementById(id); if(e)e.innerHTML=value};
+["openNames","names","storyNames","footerNames"].forEach(id=>set(id,DATA.names));
+["openDate","date","storyDate"].forEach(id=>set(id,DATA.dateText));
+set("place",DATA.place);set("storyPlace",DATA.place);
+set("quote",DATA.quote);set("groomParents",DATA.groomParents);
+set("brideParents",DATA.brideParents);set("godparents",DATA.godparents);
+set("churchName",DATA.church.name);set("churchDate",DATA.church.date);
+set("churchAddress",DATA.church.address);set("churchMap",`<a href="${DATA.church.maps}" target="_blank">Ver en Google Maps ↗</a>`);
+set("receptionName",DATA.reception.name);set("receptionDate",DATA.reception.date);
+set("receptionAddress",DATA.reception.address);set("receptionMap",`<a href="${DATA.reception.maps}" target="_blank">Ver en Google Maps ↗</a>`);
+set("footerDate",`${DATA.dateText} — ${DATA.place}`);
+
+const gallery=document.getElementById("gallery");
+DATA.photos.forEach((src,i)=>{
+  const img=document.createElement("img"); img.src=src; img.alt=`James & Delicia — Foto ${i+1}`; img.loading="lazy";
+  img.addEventListener("click",()=>openPhoto(i)); gallery.appendChild(img);
+});
+
+let current=0;
+const lb=document.getElementById("lightbox"), lbImg=document.getElementById("lightboxImg");
+function openPhoto(i){current=i;lbImg.src=DATA.photos[current];document.getElementById("photoCounter").textContent=`${current+1} / ${DATA.photos.length}`;lb.classList.add("open")}
+function move(n){current=(current+n+DATA.photos.length)%DATA.photos.length;lbImg.src=DATA.photos[current];document.getElementById("photoCounter").textContent=`${current+1} / ${DATA.photos.length}`}
+document.getElementById("closeLightbox").onclick=()=>lb.classList.remove("open");
+document.getElementById("prevPhoto").onclick=()=>move(-1);document.getElementById("nextPhoto").onclick=()=>move(1);
+lb.addEventListener("click",e=>{if(e.target===lb)lb.classList.remove("open")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")lb.classList.remove("open");if(e.key==="ArrowLeft")move(-1);if(e.key==="ArrowRight")move(1)});
+
+document.getElementById("openBtn").onclick=()=>{
+  document.getElementById("preloader").classList.add("hide");
+  document.getElementById("site").classList.remove("site-hidden");
+  document.body.style.overflow="auto";
+  setTimeout(()=>document.querySelectorAll(".reveal").forEach(e=>e.classList.add("visible")),150);
+  window.scrollTo(0,0);
+};
+document.body.style.overflow="hidden";
+
+const target=new Date(DATA.dateISO).getTime();
+function countdown(){
+ const d=Math.max(0,target-Date.now());
+ document.getElementById("days").textContent=String(Math.floor(d/86400000)).padStart(2,"0");
+ document.getElementById("hours").textContent=String(Math.floor(d/3600000)%24).padStart(2,"0");
+ document.getElementById("minutes").textContent=String(Math.floor(d/60000)%60).padStart(2,"0");
+ document.getElementById("seconds").textContent=String(Math.floor(d/1000)%60).padStart(2,"0");
+}
+countdown();setInterval(countdown,1000);
+
+const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add("visible")}),{threshold:.12});
+document.querySelectorAll(".reveal").forEach(e=>observer.observe(e));
+
+document.getElementById("rsvp").addEventListener("submit",e=>{
+ e.preventDefault();
+ const name=document.getElementById("guest").value.trim();
+ const attendance=document.getElementById("attendance").value;
+ const people=document.getElementById("people").value;
+ const msg=`Hola, somos invitados a la boda de ${DATA.names}.%0A%0ANombre: ${name}%0AAsistencia: ${attendance}%0APersonas: ${people}`;
+ const url=`https://wa.me/${DATA.whatsapp}?text=${msg}`;
+ window.open(url,"_blank");
+});
